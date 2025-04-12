@@ -1,0 +1,1 @@
+Place your before/after comparison screenshots here. Recommended: Steam Deck OLED, PC, Edge Clarity tests.

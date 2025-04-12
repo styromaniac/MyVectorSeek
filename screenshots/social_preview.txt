@@ -1,0 +1,2 @@
+Suggested use: Create a simple before/after frame with logo overlay for Discord, GitHub, forums.
+Tip: Use your Nautilus logo + shader name overlaid on clean edge detection comparison shots.
