@@ -42,6 +42,6 @@ jobs:
 
       - name: Create GitHub release
         env:
-          GH_PAT: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           gh release create "refineaa-v${{ github.run_number }}" RefineAA_v${{ github.run_number }}.zip --title "RefineAA Build v${{ github.run_number }}" --notes "Automated build and environment snapshot." || gh release upload "refineaa-v${{ github.run_number }}" RefineAA_v${{ github.run_number }}.zip --clobber
