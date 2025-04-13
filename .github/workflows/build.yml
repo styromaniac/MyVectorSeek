@@ -12,6 +12,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -29,13 +30,20 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: refine-auto-release
-          name: RefineAA Auto Release
+          tag_name: refineaa-restore-$(date +'%Y%m%d-%H%M%S')
+          name: RefineAA Restore Pack $(date +'%Y-%m-%d %H:%M:%S')
           body: |
-            🛠️ Automated Refine Release
+            🛠️ RefineAA Restore Package
+
             Build Timestamp: $(date +'%Y-%m-%d %H:%M:%S')
 
-            This is an automatic release containing the latest refine restore pack.
+            This is the official automatic restore pack for RefineAA.
+            Includes:
+            - Self-contained refine.sh with bootstrap one-liner
+            - Latest workflows (build.yml)
+            - Environment snapshot
+
+            Safe for use with Termux or any compatible restore environment.
           draft: false
           prerelease: false
           files: refine_restore.zip
