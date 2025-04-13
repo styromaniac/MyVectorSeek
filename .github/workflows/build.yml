@@ -1,16 +1,9 @@
-name: RefineAA Build and Auto-Release
+name: RefineAA Build & Release
 
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
-  pull_request:
-    branches: [ main ]
-  watch:
-    types: [ started ]
-
-env:
-  GH_PAT: ${{ secrets.GH_PAT }}
 
 jobs:
   build:
@@ -20,40 +13,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python for version bump
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
-      - name: Bump version in CHANGELOG.md
+      - name: Version bump
         run: |
-          CURRENT_VERSION=$(grep -Po '(?<=v)[0-9]+\.[0-9]+' ./docs/CHANGELOG.md | head -1)
+          CURRENT_VERSION=$(grep -Po '(?<=v)[0-9]+\.[0-9]+' ./docs/CHANGELOG.md | head -1 || echo "0.0")
           NEXT_VERSION=$(echo $CURRENT_VERSION | awk -F. '{$NF = $NF + 1;} 1' OFS=.)
           sed -i "s/v$CURRENT_VERSION/v$NEXT_VERSION/" ./docs/CHANGELOG.md
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add ./docs/CHANGELOG.md
-          git commit -m "chore: bump version to v$NEXT_VERSION"
-          git tag "v$NEXT_VERSION"
-          git push --follow-tags https://$GH_PAT@github.com/styromaniac/RefineAA.git
+          git commit -m "chore: bump version to v$NEXT_VERSION" || echo "No changes to commit."
+          git tag "v$NEXT_VERSION" || echo "Tagging skipped."
+          git push --follow-tags "https://${{ secrets.GH_PAT }}@github.com/styromaniac/RefineAA.git" || echo "Push skipped or failed."
 
-      - name: Prepare build package
+      - name: Package environment
         run: |
-          VERSION_TAG=$(grep -Po '(?<=v)[0-9]+\.[0-9]+' ./docs/CHANGELOG.md | head -1)
-          zip -r RefineAA_v${VERSION_TAG}.zip ./src ./docs ./screenshots ./scripts ./README.md ./logo.png ./$LOG
+          zip -r RefineAA_v${{ github.run_number }}.zip . -x "*.git*" "*.cache*" "*.bash_history*" "*__pycache__*"
 
-      - name: Upload build artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: RefineAA_Package
-          path: RefineAA_v*.zip
+          path: RefineAA_v${{ github.run_number }}.zip
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          name: "RefineAA v${{ github.ref_name }}"
-          tag_name: "v${{ github.ref_name }}"
-          files: RefineAA_v*.zip
-          generate_release_notes: true
+      - name: Create GitHub release
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          gh release create "refineaa-v${{ github.run_number }}" RefineAA_v${{ github.run_number }}.zip --title "RefineAA Build v${{ github.run_number }}" --notes "Automated build and environment snapshot." || gh release upload "refineaa-v${{ github.run_number }}" RefineAA_v${{ github.run_number }}.zip --clobber
