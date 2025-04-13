@@ -1,7 +1,3 @@
-permissions:
-  contents: write
-  packages: write
-  actions: write
 name: Build and Version Shader Package
 
 on:
@@ -33,7 +29,7 @@ jobs:
           git add ./docs/CHANGELOG.md
           git commit -m "chore: bump version to v$NEXT_VERSION"
           git tag "v$NEXT_VERSION"
-          git push --follow-tags https://styromaniac:${{ secrets.GH_TOKEN }}@github.com/styromaniac/RefineAA.git
+          git push --follow-tags
 
       - name: Package shader
         run: zip -r RefinedEdgeFiltering_v${{ github.ref_name }}.zip ./src ./docs ./screenshots LICENSE README.md logo.png
