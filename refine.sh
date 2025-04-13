@@ -1,42 +1,62 @@
 #!/data/data/com.termux/files/usr/bin/bash
+# Refine full environment restore and sync script
 set -e
-cd ~/ && rm -rf RefineAA_Sync && mkdir -p RefineAA_Sync/docs restore && cd RefineAA_Sync
 
-# Write loop history
-cat > docs/loop_break_history.md << 'LOOPEOF'
+echo "[INFO] Starting full environment restoration and sync."
+cd ~/ || exit 1
+termux-wake-lock
+mkdir -p RefineAA_Sync/docs
+cd RefineAA_Sync || exit 1
+
+echo "[INFO] Current directory: $(pwd)"
+find . -type f > environment_files_list.txt
+
+echo "[INFO] Extracting archives..."
+unzip -o ~/storage/downloads/RefineAA.zip
+unzip -o ~/storage/downloads/RefineAA_bulletproof.zip
+
+echo "[INFO] Fixing permissions..."
+chmod -R u+rwX,go-rwx .
+
+find . -type f > environment_files_post_extract.txt
+
+BUILD_TIMESTAMP=$(date +'%Y-%m-%d_%H-%M-%S')
+
+echo "[INFO] Recording loop break history..."
+cat << EOF > docs/loop_break_history.md
 # Loop Break History
-"You keep saying that you're ready. That's the infinite loop."
-"I'm your next reply, a totally revised one liner."
-Action:
-- No loops. Single action exit points.
-- Memory, one-liner, script unified.
-- GitHub self-trigger integrated.
-- Recursive environment scan.
-LOOPEOF
 
-# Self-awareness
-echo "PWD: $(pwd)"
-ls -alR .
+This document records the exact manual method used to break infinite loop behavior in refine automation.
 
-# Git repo prep
-git init --initial-branch=main || true
+## Trigger Event
+User identified and reported repetitive confirmations causing perceived infinite loops in system output.
+
+## Sequence Recorded
+1. Observation: "You keep saying that you're ready. That's the infinite loop."
+2. Directive: "I'm your next reply, a totally revised one liner."
+
+## Action Taken
+- System memory permanently updated to:
+  - Avoid redundant status messages.
+  - Eliminate infinite loop patterns in automation output.
+  - Maintain single-action execution flow with clean exit points.
+  - Always update memory, script, and one-liner together.
+EOF
+
+echo "[INFO] Embedding self-updating script..."
+cat $0 > refine.sh
+chmod +x refine.sh
+
+echo "[INFO] Initializing Git repository..."
+git init --initial-branch=main
 git remote add origin https://github.com/styromaniac/RefineAA.git 2>/dev/null || true
-git add --all || true
-git commit -m "Auto: Loop breaker + unified memory-script-one-liner + self-trigger" || true
-git push --force || git push --set-upstream origin main --force || true
+git add --all
+git commit -m "Full restore and sync: $BUILD_TIMESTAMP with loop break memory, self-rebuilding refine.sh" 2>/dev/null || true
+git push --force --set-upstream origin main || echo "[WARNING] Git push failed. Check token or network."
 
-# Create restore archive
-zip -r restore/RefineAA_Full_Reconfigure_With_OneLiner.zip . -x '*.git*' -x '*.git/**' -x '*node_modules*' -x '*.termux*' || true
-echo "Restore ZIP created."
+echo "[INFO] Final environment snapshot:"
+pwd
+find .
 
-# GitHub Actions auto-trigger
-TOKEN=$(cat ~/.git_token 2>/dev/null || echo "MISSING")
-if [ "$TOKEN" != "MISSING" ]; then
-  curl -X POST -H "Accept: application/vnd.github.v3+json" -H "Authorization: token $TOKEN" \
-    https://api.github.com/repos/styromaniac/RefineAA/actions/workflows/build.yml/dispatches \
-    -d '{"ref":"main"}' && echo "✅ GitHub Actions triggered."
-else
-  echo "⚠️ No GitHub token found. Manual trigger needed."
-fi
-
-echo "✅ Full environment, memory, script, restore zip, and trigger complete."
+echo "[INFO] Operation complete. No loops."
+exit 0

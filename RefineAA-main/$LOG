@@ -1,0 +1,4 @@
+"Snapshot started at $DATE"
+"✅ RefineAA directory exists"
+/data/data/com.termux/files/home/create_full_snapshot.sh: line 13: zip: command not found
+"✅ Snapshot completed: $SNAPSHOT"
