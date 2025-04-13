@@ -27,15 +27,22 @@ jobs:
           mkdir -p restore
           cp restore/RefineAA_Full_Reconfigure_With_OneLiner.zip refine_restore.zip
 
+      - name: Set release metadata
+        id: release_meta
+        run: |
+          echo "TAG_NAME=refineaa-restore-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
+          echo "RELEASE_NAME=RefineAA Restore Pack $(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
+          echo "BUILD_TIMESTAMP=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: refineaa-restore-$(date +'%Y%m%d-%H%M%S')
-          name: RefineAA Restore Pack $(date +'%Y-%m-%d %H:%M:%S')
+          tag_name: ${{ env.TAG_NAME }}
+          name: ${{ env.RELEASE_NAME }}
           body: |
             🛠️ RefineAA Restore Package
 
-            Build Timestamp: $(date +'%Y-%m-%d %H:%M:%S')
+            Build Timestamp: ${{ env.BUILD_TIMESTAMP }}
 
             This is the official automatic restore pack for RefineAA.
             Includes:
