@@ -1,4 +1,4 @@
-name: RefineAA Build and Archive
+name: RefineAA Build and Release
 
 on:
   workflow_dispatch:
@@ -23,20 +23,24 @@ jobs:
           mkdir -p restore
           cp restore/RefineAA_Full_Reconfigure_With_OneLiner.zip refine_restore.zip
 
-      - name: Archive refine restore point
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: refine-auto-release
+          name: RefineAA Auto Release
+          body: |
+            🛠️ Automated Refine Release
+            Build Timestamp: $(date +'%Y-%m-%d %H:%M:%S')
+
+            This is an automatic release containing the latest refine restore pack.
+          draft: false
+          prerelease: false
+          files: refine_restore.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload restore artifact (optional)
         uses: actions/upload-artifact@v4
         with:
           name: refine_restore
           path: refine_restore.zip
-
-      - name: Optional future auto-release
-        if: ${{ github.ref == 'refs/heads/main' }}
-        run: echo "Release step placeholder. Refine will automate this soon."
-
-  # Optional: future automation job
-  refine-repair:
-    if: ${{ false }} # Placeholder, refine will auto-enable this in future
-    runs-on: ubuntu-latest
-    steps:
-      - name: Placeholder for refine self-repair
-        run: echo "Refine system will auto-repair from restore package."
