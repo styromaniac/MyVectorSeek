@@ -1,11 +1,10 @@
-name: Build and Version Shader Package
+name: RefineAA Build and Archive
 
 on:
-  push:
-    branches: [ main ]
-    tags:
-      - 'v*'
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
@@ -14,28 +13,30 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python for version bump
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
-
-      - name: Bump version
+      - name: Set up environment
         run: |
-          CURRENT_VERSION=$(grep -Po '(?<=v)[0-9]+\.[0-9]+' ./docs/CHANGELOG.md | head -1)
-          NEXT_VERSION=$(echo $CURRENT_VERSION | awk -F. '{$NF = $NF + 1;} 1' OFS=.)
-          sed -i "s/v$CURRENT_VERSION/v$NEXT_VERSION/" ./docs/CHANGELOG.md
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add ./docs/CHANGELOG.md
-          git commit -m "chore: bump version to v$NEXT_VERSION"
-          git tag "v$NEXT_VERSION"
-          git push --follow-tags
+          sudo apt-get update
+          sudo apt-get install -y zip curl git jq
 
-      - name: Package shader
-        run: zip -r RefinedEdgeFiltering_v${{ github.ref_name }}.zip ./src ./docs ./screenshots LICENSE README.md logo.png
+      - name: Prepare restore package
+        run: |
+          mkdir -p restore
+          cp restore/RefineAA_Full_Reconfigure_With_OneLiner.zip refine_restore.zip
 
-      - name: Upload artifact
+      - name: Archive refine restore point
         uses: actions/upload-artifact@v4
         with:
-          name: RefinedEdgeFiltering_Package
-          path: RefinedEdgeFiltering_v${{ github.ref_name }}.zip
+          name: refine_restore
+          path: refine_restore.zip
+
+      - name: Optional future auto-release
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: echo "Release step placeholder. Refine will automate this soon."
+
+  # Optional: future automation job
+  refine-repair:
+    if: ${{ false }} # Placeholder, refine will auto-enable this in future
+    runs-on: ubuntu-latest
+    steps:
+      - name: Placeholder for refine self-repair
+        run: echo "Refine system will auto-repair from restore package."
